@@ -25,3 +25,5 @@ src/main/resources/firebase-service-account.json
 
 # Claude
 CLAUDE.md
+.claude/
+.mcp.json

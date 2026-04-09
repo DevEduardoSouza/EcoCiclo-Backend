@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
+public class Chat {
 
     @Exclude
     private String id;
-    private String nome;
-    private String email;
-    private String telefone;
-    private String tipo; // "doador" ou "cooperativa"
-    private int pontuacao;
+    private String remetenteId;
+    private String destinatarioId;
+    private String mensagem;
+    private String dataEnvio;
+    private boolean lida;
 }
