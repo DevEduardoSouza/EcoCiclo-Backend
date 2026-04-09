@@ -22,10 +22,144 @@ O EcoCiclo facilita e incentiva a reciclagem, otimizando a logística da coleta 
 
 | Camada | Tecnologia |
 |---|---|
-| Backend | *A definir* |
-| Banco de Dados | *A definir* |
-| Frontend Mobile | *A definir* |
+| Backend / API | Java 17 + Spring Boot |
+| Banco de Dados | Cloud Firestore |
+| Autenticação | Firebase Authentication |
+| Notificações | Firebase Cloud Messaging |
+| Chat em Tempo Real | Cloud Firestore Realtime |
+| Armazenamento | Firebase Storage |
+| Frontend Web | *A definir* |
 | Mapeamento | Google Maps Platform |
+
+## Estrutura do Projeto
+
+```
+src/main/java/com/ecociclo/
+├── EcoCicloApplication.java          # Classe principal
+├── config/
+│   └── FirebaseConfig.java           # Configuração do Firebase
+├── controller/
+│   ├── UsuarioController.java
+│   ├── PontoColetaController.java
+│   ├── AgendamentoController.java
+│   └── RecompensaController.java
+├── model/
+│   ├── Usuario.java
+│   ├── PontoColeta.java
+│   ├── Agendamento.java
+│   └── Recompensa.java
+├── service/
+│   ├── UsuarioService.java
+│   ├── PontoColetaService.java
+│   ├── AgendamentoService.java
+│   └── RecompensaService.java
+└── repository/
+    ├── UsuarioRepository.java
+    ├── PontoColetaRepository.java
+    ├── AgendamentoRepository.java
+    └── RecompensaRepository.java
+```
+
+## Endpoints da API
+
+Base URL: `http://localhost:8080`
+
+### Usuários (`/api/usuarios`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/usuarios` | Listar todos os usuários |
+| `GET` | `/api/usuarios/{id}` | Buscar usuário por ID |
+| `POST` | `/api/usuarios` | Criar novo usuário |
+| `PUT` | `/api/usuarios/{id}` | Atualizar usuário |
+| `DELETE` | `/api/usuarios/{id}` | Deletar usuário |
+
+### Pontos de Coleta (`/api/pontos-coleta`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/pontos-coleta` | Listar todos os pontos |
+| `GET` | `/api/pontos-coleta/{id}` | Buscar ponto por ID |
+| `POST` | `/api/pontos-coleta` | Criar novo ponto de coleta |
+| `PUT` | `/api/pontos-coleta/{id}` | Atualizar ponto |
+| `DELETE` | `/api/pontos-coleta/{id}` | Deletar ponto |
+
+### Agendamentos (`/api/agendamentos`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/agendamentos` | Listar todos os agendamentos |
+| `GET` | `/api/agendamentos/{id}` | Buscar agendamento por ID |
+| `POST` | `/api/agendamentos` | Criar novo agendamento |
+| `PUT` | `/api/agendamentos/{id}` | Atualizar agendamento |
+| `DELETE` | `/api/agendamentos/{id}` | Deletar agendamento |
+
+### Recompensas (`/api/recompensas`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/recompensas` | Listar todas as recompensas |
+| `GET` | `/api/recompensas/{id}` | Buscar recompensa por ID |
+| `POST` | `/api/recompensas` | Criar nova recompensa |
+| `PUT` | `/api/recompensas/{id}` | Atualizar recompensa |
+| `DELETE` | `/api/recompensas/{id}` | Deletar recompensa |
+
+### Exemplos de JSON
+
+**Usuário:**
+```json
+{
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "telefone": "(71) 99999-0000",
+  "tipo": "doador",
+  "pontuacao": 0
+}
+```
+
+**Ponto de Coleta:**
+```json
+{
+  "nome": "Ecoponto Centro",
+  "endereco": "Rua Principal, 100",
+  "latitude": -12.9714,
+  "longitude": -38.5124,
+  "tiposResiduos": ["plástico", "vidro", "metal"],
+  "horarioFuncionamento": "08:00 - 17:00"
+}
+```
+
+**Agendamento:**
+```json
+{
+  "usuarioId": "abc123",
+  "pontoColetaId": "xyz789",
+  "dataHora": "2026-04-15T10:00:00",
+  "tipoResiduo": "plástico",
+  "status": "pendente"
+}
+```
+
+**Recompensa:**
+```json
+{
+  "descricao": "Desconto 10% na loja parceira",
+  "pontosNecessarios": 100,
+  "tipo": "desconto",
+  "ativa": true
+}
+```
+
+## Como Rodar
+
+1. Instale **Java 17** e **Maven**
+2. Coloque o arquivo `firebase-service-account.json` em `src/main/resources/`
+3. Execute:
+```bash
+mvn clean install
+mvn spring-boot:run
+```
+4. Acesse: `http://localhost:8080/api/usuarios`
 
 ## Equipe
 
