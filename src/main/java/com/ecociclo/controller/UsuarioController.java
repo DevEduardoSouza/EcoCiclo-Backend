@@ -19,7 +19,7 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<String> criar(@RequestBody Usuario usuario) throws ExecutionException, InterruptedException {
         String id = usuarioService.criar(usuario);
-        return ResponseEntity.ok(id);
+        return ResponseEntity.ok(id);f
     }
 
     @GetMapping("/{id}")
