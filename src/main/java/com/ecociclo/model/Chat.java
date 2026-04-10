@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 // TODO: Implementação será discutida com a equipe
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 public class Chat {
 
 }
