@@ -152,13 +152,51 @@ Base URL: `http://localhost:8080`
 
 ## Como Rodar
 
+### Opção 1 — Docker (recomendado)
+
+Essa é a forma mais fácil. Você **não precisa** instalar Java nem Maven na sua máquina — só o Docker.
+
+**Pré-requisitos:**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e aberto
+
+**Passo a passo:**
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/DevEduardoSouza/EcoCiclo-Backend.git
+   cd EcoCiclo-Backend
+   ```
+
+2. Coloque o arquivo `firebase-service-account.json` em `src/main/resources/`
+   *(peça esse arquivo para algum membro da equipe — ele não vai para o Git por segurança)*
+
+3. Suba o container:
+   ```bash
+   docker compose up --build
+   ```
+
+4. Pronto! A API estará rodando em `http://localhost:8080`
+
+**Comandos úteis:**
+```bash
+docker compose up              # rodar (primeira vez pode demorar alguns minutos)
+docker compose up -d           # rodar em background
+docker compose down            # parar
+docker compose up --build      # rebuildar depois de mudar código Java
+docker compose logs -f         # acompanhar logs
+```
+
+### Opção 2 — Local (Java + Maven)
+
+Se preferir rodar direto na máquina:
+
 1. Instale **Java 17** e **Maven**
 2. Coloque o arquivo `firebase-service-account.json` em `src/main/resources/`
 3. Execute:
-```bash
-mvn clean install
-mvn spring-boot:run
-```
+   ```bash
+   mvn clean install
+   mvn spring-boot:run
+   ```
 4. Acesse: `http://localhost:8080/api/usuarios`
 
 ## Equipe

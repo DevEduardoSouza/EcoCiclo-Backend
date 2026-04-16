@@ -1,0 +1,9 @@
+services:
+  backend:
+    build: .
+    container_name: ecociclo-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src/main/resources/firebase-service-account.json:/app/src/main/resources/firebase-service-account.json:ro
+    restart: unless-stopped

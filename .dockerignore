@@ -1,0 +1,14 @@
+target/
+.git/
+.idea/
+.vscode/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+.claude/
+.mcp.json
+CLAUDE.md
+*.log
+.env
+Thumbs.db
+.DS_Store
+src/main/resources/firebase-service-account.json
