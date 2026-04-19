@@ -10,13 +10,26 @@ O EcoCiclo facilita e incentiva a reciclagem, otimizando a logística da coleta 
 
 ## Funcionalidades
 
-- **Cadastro de Usuários** — cidadãos (doadores) e cooperativas (coletores)
+- **Cadastro de Usuários** — sistema com 4 perfis (ver seção *Perfis de Usuário*)
 - **Pontos de Coleta** — cadastro e localização de pontos para descarte
 - **Agendamento de Coleta** — agendamento com data, local e tipo de resíduo
 - **Guia de Reciclagem** — orientações visuais de descarte correto
 - **Sistema de Recompensas** — pontuação por reciclagem concluída, trocável por recompensas
 - **Chat Doador/Coletor** — comunicação direta durante o processo de coleta
 - **Perfil do Usuário** — informações pessoais, pontuação e histórico
+
+## Perfis de Usuário
+
+O sistema tem 4 perfis com uma hierarquia de cadastro bem definida:
+
+| Perfil | Quem é | Cadastrado por |
+|---|---|---|
+| `ADMIN` | IFBA — administrador geral | cadastro manual / bootstrap |
+| `ASSOCIACAO` | Cooperativas de reciclagem parceiras | ADMIN (IFBA) |
+| `RECEPTOR` | Coletores membros de uma associação | a própria ASSOCIACAO a que pertencem |
+| `DOADOR` | Cidadãos que doam resíduos | auto-cadastro |
+
+**Hierarquia:** IFBA → Associações → Coletores. Receptores têm o campo `associacaoId` vinculando-os à associação dona.
 
 ## Tecnologias
 
@@ -37,27 +50,36 @@ O EcoCiclo facilita e incentiva a reciclagem, otimizando a logística da coleta 
 src/main/java/com/ecociclo/
 ├── EcoCicloApplication.java          # Classe principal
 ├── config/
-│   └── FirebaseConfig.java           # Configuração do Firebase
+│   ├── FirebaseConfig.java           # Inicialização do Firebase
+│   ├── FirebaseAuthFilter.java       # Valida o token Firebase em cada request
+│   ├── FilterConfig.java             # Registro do filtro de autenticação
+│   ├── CorsConfig.java               # Configuração de CORS
+│   └── DataSeeder.java               # Insere usuários de teste no startup
 ├── controller/
 │   ├── UsuarioController.java
 │   ├── PontoColetaController.java
 │   ├── AgendamentoController.java
-│   └── RecompensaController.java
+│   ├── RecompensaController.java
+│   └── ChatController.java
 ├── model/
 │   ├── Usuario.java
+│   ├── TipoUsuario.java              # Enum dos 4 perfis
 │   ├── PontoColeta.java
 │   ├── Agendamento.java
-│   └── Recompensa.java
+│   ├── Recompensa.java
+│   └── Chat.java
 ├── service/
 │   ├── UsuarioService.java
 │   ├── PontoColetaService.java
 │   ├── AgendamentoService.java
-│   └── RecompensaService.java
+│   ├── RecompensaService.java
+│   └── ChatService.java
 └── repository/
     ├── UsuarioRepository.java
     ├── PontoColetaRepository.java
     ├── AgendamentoRepository.java
-    └── RecompensaRepository.java
+    ├── RecompensaRepository.java
+    └── ChatRepository.java
 ```
 
 ## Endpoints da API
@@ -106,16 +128,31 @@ Base URL: `http://localhost:8080`
 
 ### Exemplos de JSON
 
-**Usuário:**
+**Usuário (doador/admin/associação):**
 ```json
 {
   "nome": "João Silva",
   "email": "joao@email.com",
   "telefone": "(71) 99999-0000",
-  "tipo": "doador",
+  "tipo": "DOADOR",
+  "associacaoId": null,
   "pontuacao": 0
 }
 ```
+
+**Usuário (receptor/coletor):** `associacaoId` é obrigatório e aponta para a associação dona do coletor.
+```json
+{
+  "nome": "Pedro Coletor",
+  "email": "pedro@cooperlimpa.org",
+  "telefone": "(74) 9111-0001",
+  "tipo": "RECEPTOR",
+  "associacaoId": "abc123xyz",
+  "pontuacao": 0
+}
+```
+
+> Valores aceitos de `tipo`: `ADMIN`, `ASSOCIACAO`, `DOADOR`, `RECEPTOR` (maiúsculos).
 
 **Ponto de Coleta:**
 ```json
@@ -198,6 +235,29 @@ Se preferir rodar direto na máquina:
    mvn spring-boot:run
    ```
 4. Acesse: `http://localhost:8080/api/usuarios`
+
+## Seeder de Usuários de Teste
+
+O projeto inclui um `DataSeeder` que insere 8 usuários de teste (1 admin, 2 associações, 2 doadores, 3 receptores) na coleção `usuarios` do Firestore.
+
+**Comportamento:**
+- Roda automaticamente no startup da aplicação.
+- Se a coleção `usuarios` **estiver vazia**, insere os usuários de teste.
+- Se já tiver dados, não faz nada.
+
+**Resetar e reinserir** (útil quando há documentos antigos em formato incompatível):
+
+```bash
+mvn spring-boot:run -Decociclo.seed.reset=true
+```
+
+Ou via variável de ambiente:
+
+```bash
+ECOCICLO_SEED_RESET=true mvn spring-boot:run
+```
+
+Depois da primeira execução com reset, pode rodar normal sem a flag.
 
 ## Equipe
 
