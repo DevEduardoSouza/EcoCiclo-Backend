@@ -3,22 +3,40 @@ package com.ecociclo.config;
 import com.ecociclo.model.TipoUsuario;
 import com.ecociclo.model.Usuario;
 import com.ecociclo.repository.UsuarioRepository;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class DataSeeder implements CommandLineRunner {
 
-    private final UsuarioRepository usuarioRepository;
+    private static final String COLLECTION = "usuarios";
 
-    public DataSeeder(UsuarioRepository usuarioRepository) {
+    private final UsuarioRepository usuarioRepository;
+    private final Firestore firestore;
+
+    @Value("${ecociclo.seed.reset:false}")
+    private boolean resetAntesDeSeedar;
+
+    public DataSeeder(UsuarioRepository usuarioRepository, Firestore firestore) {
         this.usuarioRepository = usuarioRepository;
+        this.firestore = firestore;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        if (!usuarioRepository.listarTodos().isEmpty()) {
-            System.out.println("[Seeder] Coleção 'usuarios' já possui dados — nada a inserir.");
+        if (resetAntesDeSeedar) {
+            int removidos = apagarTodos();
+            System.out.println("[Seeder] Modo reset ativo — " + removidos + " documentos removidos.");
+        }
+
+        if (!colecaoVazia()) {
+            System.out.println("[Seeder] Coleção 'usuarios' já possui dados — nada a inserir. "
+                    + "Use -Decociclo.seed.reset=true (ou env ECOCICLO_SEED_RESET=true) para limpar antes.");
             return;
         }
 
@@ -57,5 +75,18 @@ public class DataSeeder implements CommandLineRunner {
         usuarioRepository.salvar(receptor3);
 
         System.out.println("[Seeder] 8 usuários inseridos (1 admin, 2 associações, 2 doadores, 3 receptores).");
+    }
+
+    // Verifica existência sem desserializar, evitando falha quando há documentos com formato antigo
+    private boolean colecaoVazia() throws Exception {
+        return firestore.collection(COLLECTION).limit(1).get().get().isEmpty();
+    }
+
+    private int apagarTodos() throws Exception {
+        List<QueryDocumentSnapshot> docs = firestore.collection(COLLECTION).get().get().getDocuments();
+        for (QueryDocumentSnapshot doc : docs) {
+            doc.getReference().delete().get();
+        }
+        return docs.size();
     }
 }
