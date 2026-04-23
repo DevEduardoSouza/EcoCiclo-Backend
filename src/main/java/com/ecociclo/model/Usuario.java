@@ -18,5 +18,7 @@ public class Usuario {
     private TipoUsuario tipo;
     // ID da associação dona do receptor. Null para ADMIN, ASSOCIACAO e DOADOR.
     private String associacaoId;
+    // UID emitido pelo Firebase Auth. Liga o documento do Firestore ao usuário autenticado.
+    private String firebaseUid;
     private int pontuacao;
 }
