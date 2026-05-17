@@ -1,13 +1,27 @@
 package com.ecociclo.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Setter;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Implementação será discutida com a equipe
-@Data
+@Getter     
+@Setter
 @NoArgsConstructor
-//@AllArgsConstructor
+@AllArgsConstructor
+
 public class PontoColeta {
+
+    private Long id;
+    private String nome;
+    private String responsavel;
+    private String telefone;
+    private String email;
+    private String endereco;
+    private String bairro;
+    private String cidade;
+    private String estado;
+    private String cep;
+    private Boolean ativo;
 
 }

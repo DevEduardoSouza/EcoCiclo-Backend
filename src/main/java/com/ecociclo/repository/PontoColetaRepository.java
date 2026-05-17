@@ -1,9 +1,9 @@
 package com.ecociclo.repository;
 
+import com.ecociclo.model.PontoColeta;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-// TODO: Implementação será discutida com a equipe
 @Repository
-public class PontoColetaRepository {
-
+public interface PontoColetaRepository extends JpaRepository<PontoColeta, Long> {
 }
