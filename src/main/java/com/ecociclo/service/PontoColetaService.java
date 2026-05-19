@@ -5,68 +5,108 @@ import com.ecociclo.repository.PontoColetaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
-public class PontoColetaService {
-
+public class PontoColetaService{
     private final PontoColetaRepository repository;
 
-    public PontoColetaService(PontoColetaRepository repository) {
+    public PontoColetaService(PontoColetaRepository repository){
         this.repository = repository;
     }
 
-    // Cadastrar ponto de coleta
-    public PontoColeta salvar(PontoColeta pontoColeta) {
-        pontoColeta.setAtivo(true);
-        return repository.save(pontoColeta);
+    public PontoColeta salvar(PontoColeta pontoColeta){
+        try{
+            pontoColeta.setAtivo(true);
+
+            String id = repository.salvar(pontoColeta);
+
+            pontoColeta.setId(id);
+
+            return pontoColeta;
+        }catch (ExecutionException | InterruptedException e){
+            throw new RuntimeException("Erro ao salvar ponto de coleta", e);
+        }
     }
 
-    // Listar todos os pontos de coleta
+    // Listar todos
     public List<PontoColeta> listarTodos() {
-        return repository.findAll();
+
+        try {
+            return repository.listarTodos();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Erro ao listar pontos", e);
+        }
     }
 
-    // Buscar ponto por ID
-    public PontoColeta buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ponto de coleta não encontrado"));
+    // Buscar por ID
+    public PontoColeta buscarPorId(String id) {
+
+        try {
+
+            PontoColeta ponto = repository.buscarPorId(id);
+
+            if (ponto == null) {
+                throw new RuntimeException("Ponto não encontrado");
+            }
+
+            return ponto;
+
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Erro ao buscar ponto", e);
+        }
     }
 
-    // Atualizar ponto de coleta
-    public PontoColeta atualizar(Long id, PontoColeta pontoColeta) {
+    //Atualizar
+    public PontoColeta atualizar(String id, PontoColeta pontoColeta) {
 
-        PontoColeta pontoExistente = buscarPorId(id);
+        try {
 
-        pontoExistente.setNome(pontoColeta.getNome());
-        pontoExistente.setResponsavel(pontoColeta.getResponsavel());
-        pontoExistente.setTelefone(pontoColeta.getTelefone());
-        pontoExistente.setEmail(pontoColeta.getEmail());
-        pontoExistente.setEndereco(pontoColeta.getEndereco());
-        pontoExistente.setBairro(pontoColeta.getBairro());
-        pontoExistente.setCidade(pontoColeta.getCidade());
-        pontoExistente.setEstado(pontoColeta.getEstado());
-        pontoExistente.setCep(pontoColeta.getCep());
+            PontoColeta existente = buscarPorId(id);
 
-        return repository.save(pontoExistente);
+            existente.setNome(pontoColeta.getNome());
+            existente.setResponsavel(pontoColeta.getResponsavel());
+            existente.setTelefone(pontoColeta.getTelefone());
+            existente.setEmail(pontoColeta.getEmail());
+            existente.setEndereco(pontoColeta.getEndereco());
+            existente.setBairro(pontoColeta.getBairro());
+            existente.setCidade(pontoColeta.getCidade());
+            existente.setEstado(pontoColeta.getEstado());
+            existente.setCep(pontoColeta.getCep());
+
+            repository.atualizar(id, existente);
+
+            return existente;
+
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Erro ao atualizar ponto", e);
+        }
     }
 
-    // Deletar ponto de coleta
-    public void deletar(Long id) {
-        PontoColeta ponto = buscarPorId(id);
-        repository.delete(ponto);
+    //Desativart
+    public PontoColeta desativar(String id){
+        try{
+            PontoColeta ponto = buscarPorId(id);
+            ponto.setAtivo(false);
+
+            repository.atualizar(id, ponto);
+
+            return ponto;
+        } catch (ExecutionException | InterruptedException e){
+            throw new RuntimeException("Erro ao desativar ponto", e);
+        }
     }
 
-    // Desativar ponto de coleta
-    public PontoColeta desativar(Long id) {
-        PontoColeta ponto = buscarPorId(id);
-        ponto.setAtivo(false);
-        return repository.save(ponto);
+    //Ativar
+    public PontoColeta ativar(String id){
+        try{
+            PontoColeta ponto = buscarPorId(id);
+            ponto.setAtivo(true);
+            repository.atualizar(id, ponto);
+            return ponto;
+        }catch (ExecutionException | InterruptedException e){
+            throw new RuntimeException("Erro ao ativar ponto", e);
+        }
     }
-
-    // Ativar ponto de coleta
-    public PontoColeta ativar(Long id) {
-        PontoColeta ponto = buscarPorId(id);
-        ponto.setAtivo(true);
-        return repository.save(ponto);
-    }
+       
 }

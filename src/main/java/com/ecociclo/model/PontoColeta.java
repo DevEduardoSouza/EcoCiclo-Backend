@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 public class PontoColeta {
 
-    private Long id;
+    private String id;
     private String nome;
     private String responsavel;
     private String telefone;

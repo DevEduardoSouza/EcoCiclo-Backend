@@ -9,6 +9,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/pontos-coleta")
 public class PontoColetaController {
+    
     private final PontoColetaService service;
 
     public PontoColetaController(PontoColetaService service) {
@@ -26,31 +27,31 @@ public class PontoColetaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PontoColeta> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<PontoColeta> buscarPorId(@PathVariable String id) {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PontoColeta> atualizar(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody PontoColeta pontoColeta
     ) {
         return ResponseEntity.ok(service.atualizar(id, pontoColeta));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable String id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/ativar")
-    public ResponseEntity<PontoColeta> ativar(@PathVariable Long id) {
+    public ResponseEntity<PontoColeta> ativar(@PathVariable String id) {
         return ResponseEntity.ok(service.ativar(id));
     }
 
     @PutMapping("/{id}/desativar")
-    public ResponseEntity<PontoColeta> desativar(@PathVariable Long id) {
+    public ResponseEntity<PontoColeta> desativar(@PathVariable String id) {
         return ResponseEntity.ok(service.desativar(id));
     }
 }
