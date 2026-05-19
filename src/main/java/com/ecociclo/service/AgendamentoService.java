@@ -1,10 +1,8 @@
 package com.ecociclo.service;
 
-import com.ecociclo.model.Agendamento;
-import com.ecociclo.model.StatusAgendamento;
-import com.ecociclo.model.TipoUsuario;
-import com.ecociclo.model.Usuario;
+import com.ecociclo.model.*;
 import com.ecociclo.repository.AgendamentoRepository;
+import com.ecociclo.repository.PontoColetaRepository;
 import com.ecociclo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,8 +20,11 @@ public class AgendamentoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // @Autowired
-    // private PontoColetaRepository pontoColetaRepository;
+    @Autowired
+    private PontoColetaRepository pontoColetaRepository;
+
+    @Autowired
+    private RecompensaService recompensaService;
 
     //CRUD
     //Criar agendamento
@@ -79,7 +80,8 @@ public class AgendamentoService {
     }
 
     //Transiciona o status de agendamento
-    public void transicionarStatus(String id, StatusAgendamento novoStatus) throws ExecutionException, InterruptedException{
+    public void transicionarStatus(String id, StatusAgendamento novoStatus)
+            throws ExecutionException, InterruptedException {
 
         if (novoStatus == null) {
             throw new IllegalArgumentException("novoStatus é obrigatório.");
@@ -87,7 +89,7 @@ public class AgendamentoService {
 
         Agendamento ag = agendamentoRepository.buscarPorId(id);
 
-        if (ag == null){
+        if (ag == null) {
             throw new IllegalArgumentException(
                     "Agendamento " + id + " nao encontrado"
             );
@@ -99,24 +101,24 @@ public class AgendamentoService {
         // Atualiza o status
         ag.setStatus(novoStatus);
 
+        // Se concluir o agendamento
         if (novoStatus == StatusAgendamento.CONCLUIDO) {
 
-            // Regra simples: cada material vale 10 pontos
+            // Cada material vale 10 pontos
             int pontos = ag.getMateriais().size() * 10;
 
+            // Salva quantos pontos o agendamento gerou
             ag.setPontosGerados(pontos);
 
-            Usuario usuario = usuarioRepository.buscarPorId(ag.getDoadorId());
-            if (usuario == null)
-                throw new IllegalArgumentException(
-                        "Usuário doador '" + ag.getDoadorId() + "' não encontrado ao concluir agendamento.");
-
-            usuario.setPontuacao(usuario.getPontuacao() + pontos);
-            usuarioRepository.atualizar(usuario.getId(), usuario);
-            // recompensaService.creditarPontos(ag.getDoadorId(), pontos, id);
+            // Credita os pontos no usuário
+            recompensaService.creditarPontos(
+                    ag.getDoadorId(),
+                    pontos,
+                    id
+            );
         }
 
-        // Atualiza agendamento no Firestore
+        // Atualiza o agendamento no Firestore
         agendamentoRepository.atualizar(id, ag);
     }
 
@@ -142,11 +144,18 @@ public class AgendamentoService {
             throw new IllegalArgumentException(
                     "doadorId '" + ag.getDoadorId() + "' não aponta para um usuário do tipo DOADOR.");
 
-        // if (ag.getPontoColetaId() != null && !ag.getPontoColetaId().isBlank()) {
-        //     PontoColeta pc = pontoColetaRepository.buscarPorId(ag.getPontoColetaId());
-        //     if (pc == null || !pc.isAtivo())
-        //         throw new IllegalArgumentException(
-        //                 "pontoColetaId '" + ag.getPontoColetaId() + "' não existe ou está inativo.");
-        // }
+        //Valida ponto de coleta
+        if (ag.getPontoColetaId() == null || ag.getPontoColetaId().isBlank())
+            throw new IllegalArgumentException("Campo 'pontoColetaId' é obrigatório.");
+
+        PontoColeta pc = pontoColetaRepository.buscarPorId(ag.getPontoColetaId());
+
+        if (pc == null)
+            throw new IllegalArgumentException(
+                    "pontoColetaId '" + ag.getPontoColetaId() + "' não encontrado.");
+
+        if (!pc.getAtivo())
+            throw new IllegalArgumentException(
+                    "Ponto de coleta está inativo.");
     }
 }
