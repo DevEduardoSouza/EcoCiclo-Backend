@@ -55,4 +55,31 @@ public class MensagemController {
         mensagemService.deletar(chatId, mensagemId, null);
         return ResponseEntity.ok().build();
     }
+
+    // PATCH /api/chats/{chatId}/mensagens/{mensagemId}/lida
+    @PatchMapping("/{mensagemId}/lida")
+    public ResponseEntity<?> marcarComoLida(
+            @PathVariable String chatId,
+            @PathVariable String mensagemId) throws ExecutionException, InterruptedException {
+        try {
+            mensagemService.marcarComoLida(chatId, mensagemId, null);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        }
+    }
+
+    // PATCH /api/chats/{chatId}/mensagens/lidas?usuarioId={usuarioId}
+    @PatchMapping("/lidas")
+    public ResponseEntity<?> marcarTodasComoLidas(
+            @PathVariable String chatId,
+            @RequestParam String usuarioId) throws ExecutionException, InterruptedException {
+        try {
+            mensagemService.marcarTodasComoLidas(chatId, usuarioId);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        }
+    }
+
 }

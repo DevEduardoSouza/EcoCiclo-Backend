@@ -17,19 +17,17 @@ public class ChatService {
     @Autowired
     private ChatRepository repositorio;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository; //dependência para o metodo novoChat
 
     public String novoChat(Chat chat) throws ExecutionException, InterruptedException {
         if (chat.getParticipantesId() == null || chat.getParticipantesId().size() < 2) {
             throw new IllegalArgumentException("Um chat precisa de pelo menos 2 participantes.");
         }
 
-        // validar se todos os participantes existem
-        for (String uid : chat.getParticipantesId()) {
-            if (usuarioRepository.buscarPorId(uid) == null) {
-                throw new IllegalArgumentException("Participante não encontrado: " + uid);
-            }
+        // Verifica se já existe chat com os mesmos participantes
+        Optional<Chat> existente = repositorio.buscarPorParticipantes(chat.getParticipantesId());
+        if (existente.isPresent()) {
+            // Retorna o ID do chat existente em vez de lançar erro
+            return existente.get().getId();
         }
 
         return repositorio.criarChat(chat);
@@ -45,4 +43,10 @@ public class ChatService {
         }
         return repositorio.buscarPorUsuario(usuarioId);
     }
+
+    public Optional<Chat> buscarPorParticipantes(List<String> participantesId)
+            throws ExecutionException, InterruptedException {
+        return repositorio.buscarPorParticipantes(participantesId);
+    }
+
 }

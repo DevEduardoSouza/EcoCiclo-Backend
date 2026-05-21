@@ -13,20 +13,22 @@ public class Mensagem {
     private String id;
 
     private String chatId;        //redundante mas útil para queries diretas
-    private String remetenteId;   //ID do usuário que enviou
-    private String conteudo;      //texto da mensagem
+    private String autorId;   //ID do usuário que enviou
+    private String texto;      //texto da mensagem
     private TipoMensagem tipo;    //TEXTO (expansível para IMAGEM, ARQUIVO, SISTEMA)
     private long enviadoEm;       //epoch millis — usado para ordenação e cursor
+    private boolean lida;       // Campo para marcar se a mensagem foi lida pelo destinatário. Útil para notificações e UX.
 
     public enum TipoMensagem {
         TEXTO
     }
 
-    public Mensagem(String chatId, String remetenteId, String conteudo) {
+    public Mensagem(String chatId, String autorId, String texto) {
         this.chatId = chatId;
-        this.remetenteId = remetenteId;
-        this.conteudo = conteudo;
+        this.autorId = autorId;
+        this.texto = texto;
         this.tipo = TipoMensagem.TEXTO;
         this.enviadoEm = Instant.now().toEpochMilli();
+        this.lida = false;
     }
 }

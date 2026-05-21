@@ -3,7 +3,7 @@ package com.ecociclo.service;
 import com.ecociclo.model.Mensagem;
 import com.ecociclo.repository.ChatRepository;
 import com.ecociclo.repository.MensagemRepository;
-import com.ecociclo.repository.UsuarioRepository;
+//import com.ecociclo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,34 +19,34 @@ public class MensagemService {
     @Autowired
     private ChatRepository chatRepository;          // valida se o chat existe
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;    // valida se o remetente existe e é participante
+   // @Autowired
+   // private UsuarioRepository usuarioRepository;    // valida se o remetente existe e é participante
 
     public String enviar(String chatId, Mensagem mensagem)
             throws ExecutionException, InterruptedException {
 
-        // 1. Chat deve existir
         var chat = chatRepository.buscarPorId(chatId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat '" + chatId + "' não encontrado."));
 
-        // 2. Remetente obrigatório
-        if (mensagem.getRemetenteId() == null || mensagem.getRemetenteId().isBlank()) {
-            throw new IllegalArgumentException("Campo 'remetenteId' é obrigatório.");
+        if (mensagem.getAutorId() == null || mensagem.getAutorId().isBlank()) {
+            throw new IllegalArgumentException("Campo 'autorId' é obrigatório.");
         }
-
-        // 3. Remetente deve ser participante do chat
-        if (!chat.getParticipantesId().contains(mensagem.getRemetenteId())) {
+        if (!chat.getParticipantesId().contains(mensagem.getAutorId())) {
             throw new IllegalArgumentException(
-                    "Remetente '" + mensagem.getRemetenteId() + "' não é participante deste chat.");
+                    "Autor '" + mensagem.getAutorId() + "' não é participante deste chat.");
         }
-
-        // 4. Conteúdo não pode ser vazio
-        if (mensagem.getConteudo() == null || mensagem.getConteudo().isBlank()) {
+        if (mensagem.getTexto() == null || mensagem.getTexto().isBlank()) {
             throw new IllegalArgumentException("Mensagem não pode ser vazia.");
         }
 
         mensagem.setChatId(chatId);
-        return mensagemRepository.enviar(chatId, mensagem);
+        String mensagemId = mensagemRepository.enviar(chatId, mensagem);
+
+        // Atualiza o chat com a última mensagem enviada
+        String preview = gerarPreview(mensagem.getTexto());
+        chatRepository.atualizarUltimaAtividade(chatId, preview);
+
+        return mensagemId;
     }
 
     public List<Mensagem> listar(String chatId, Integer limite, String cursorMensagemId)
@@ -66,4 +66,35 @@ public class MensagemService {
         // buscando a mensagem e comparando o remetenteId
         mensagemRepository.deletar(chatId, mensagemId);
     }
+
+    public void marcarComoLida(String chatId, String mensagemId, String solicitanteId)
+            throws ExecutionException, InterruptedException {
+
+        // Busca a mensagem para validar
+        // (você pode criar um buscarPorId no repository se quiser validação mais rígida)
+        mensagemRepository.marcarComoLida(chatId, mensagemId);
+    }
+
+    public void marcarTodasComoLidas(String chatId, String usuarioId)
+            throws ExecutionException, InterruptedException {
+
+        // Usuário deve ser participante do chat
+        var chat = chatRepository.buscarPorId(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat '" + chatId + "' não encontrado."));
+
+        if (!chat.getParticipantesId().contains(usuarioId)) {
+            throw new IllegalArgumentException(
+                    "Usuário '" + usuarioId + "' não é participante deste chat.");
+        }
+
+        mensagemRepository.marcarTodasComoLidas(chatId, usuarioId);
+    }
+
+    // Trunca textos longos para exibir na lista de chats (ex: "Olá, tudo bem co...")
+    private String gerarPreview(String texto) {
+        int limite = 60;
+        if (texto == null) return "";
+        return texto.length() <= limite ? texto : texto.substring(0, limite) + "...";
+    }
+
 }

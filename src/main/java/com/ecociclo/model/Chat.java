@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 // TODO: Implementação será discutida com a equipe
@@ -20,11 +21,15 @@ public class Chat {
     private List<String> participantesId;
     private String ultimaMensagem;
     private long criadoEm;
-    private long atualizadoEm;
+    private long ultimaAtividade;
+    private LocalDateTime dataCriacao;
+    private String agendamentoId;
 
-    public Chat(List<String> participantesId) {
+    public Chat(List<String> participantesId, String agendamentoId) {
         this.participantesId = participantesId;
+        this.agendamentoId = agendamentoId;
         this.criadoEm = Instant.now().toEpochMilli();
-        this.atualizadoEm = Instant.now().toEpochMilli();
+        this.ultimaAtividade = Instant.now().toEpochMilli();
+        this.dataCriacao = LocalDateTime.now();
     }
 }
