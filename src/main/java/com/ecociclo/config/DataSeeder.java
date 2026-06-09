@@ -1,8 +1,8 @@
 package com.ecociclo.config;
 
-import com.ecociclo.model.TipoUsuario;
-import com.ecociclo.model.Usuario;
-import com.ecociclo.repository.UsuarioRepository;
+import com.ecociclo.usuario.model.TipoUsuario;
+import com.ecociclo.usuario.model.Usuario;
+import com.ecociclo.usuario.repository.UsuarioRepository;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import org.springframework.beans.factory.annotation.Value;
