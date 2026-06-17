@@ -1,6 +1,7 @@
 package com.ecociclo.agendamento.service;
 
 import com.ecociclo.agendamento.model.Agendamento;
+import com.ecociclo.agendamento.model.Doacao;
 import com.ecociclo.agendamento.model.StatusAgendamento;
 import com.ecociclo.agendamento.repository.AgendamentoRepository;
 import com.ecociclo.pontoColeta.model.PontoColeta;
@@ -109,8 +110,11 @@ public class AgendamentoService {
         // Se concluir o agendamento
         if (novoStatus == StatusAgendamento.CONCLUIDO) {
 
-            // Cada material vale 10 pontos
-            int pontos = ag.getMateriais().size() * 10;
+
+            int pontos = ag.getDoacoes()
+                    .stream()
+                    .mapToInt(Doacao::getQuantidade)
+                    .sum() * 10;
 
             // Salva quantos pontos o agendamento gerou
             ag.setPontosGerados(pontos);
@@ -135,8 +139,16 @@ public class AgendamentoService {
         if (ag.getDataHora() == null || ag.getDataHora().isBlank())
             throw new IllegalArgumentException("Campo 'dataHora' é obrigatório.");
 
-        if (ag.getMateriais() == null || ag.getMateriais().isEmpty())
-            throw new IllegalArgumentException("Campo 'materiais' não pode ser vazio.");
+        if (ag.getDoacoes() == null || ag.getDoacoes().isEmpty())
+            throw new IllegalArgumentException("Campo 'doacoes' não pode ser vazio.");
+
+        for (Doacao d : ag.getDoacoes()) {
+            if (d.getNome() == null || d.getNome().isBlank())
+                throw new IllegalArgumentException("Doação com nome inválido.");
+
+            if (d.getQuantidade() <= 0)
+                throw new IllegalArgumentException("Quantidade deve ser maior que 0.");
+        }
 
         // Valida que a data não é no passado
         LocalDateTime dataHora = LocalDateTime.parse(ag.getDataHora());

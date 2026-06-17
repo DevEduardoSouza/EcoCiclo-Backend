@@ -21,7 +21,7 @@ public class Agendamento {
     private String dataHora;
     private String dataCriacao;
     private StatusAgendamento status;
-    private List<String> materiais;
+    private List<Doacao> doacoes;
     private String observacoes;
     private int pontosGerados;
 }
