@@ -64,6 +64,158 @@ src/main/java/com/ecociclo/
     +-- service/
 ```
 
+## Diagrama de Classes
+
+```mermaid
+classDiagram
+    class Usuario {
+        +String id
+        +String nome
+        +String email
+        +String telefone
+        +TipoUsuario tipo
+        +String associacaoId
+        +String firebaseUid
+        +int pontuacao
+    }
+
+    class TipoUsuario {
+        <<enumeration>>
+        ADMIN
+        ASSOCIACAO
+        DOADOR
+        RECEPTOR
+    }
+
+    class Associacao {
+        +String id
+        +String nomeAssociacao
+        +StatusAssociacao status
+    }
+
+    class StatusAssociacao {
+        <<enumeration>>
+        OK
+        NEGADO
+        PENDENTE
+    }
+
+    class PontoColeta {
+        +String id
+        +String nome
+        +String responsavel
+        +String telefone
+        +String email
+        +Endereco endereco
+        +Boolean ativo
+    }
+
+    class Endereco {
+        +String logradouro
+        +String bairro
+        +String cidade
+        +String estado
+        +String cep
+    }
+
+    class Agendamento {
+        +String id
+        +String doadorId
+        +String pontoColetaId
+        +String receptorId
+        +String dataHora
+        +String dataCriacao
+        +StatusAgendamento status
+        +List~Doacao~ doacoes
+        +String observacoes
+        +int pontosGerados
+    }
+
+    class StatusAgendamento {
+        <<enumeration>>
+        PENDENTE
+        CONFIRMADO
+        CONCLUIDO
+        CANCELADO
+    }
+
+    class Doacao {
+        +String id
+        +String nome
+        +int quantidade
+        +String foto
+    }
+
+    class Recompensa {
+        +String id
+        +String nome
+        +String descricao
+        +int custoPontos
+        +String parceiro
+        +boolean disponivel
+        +Integer estoque
+        +int bloqueados
+        +String imagemUrl
+    }
+
+    class Resgate {
+        +String id
+        +String recompensaId
+        +String usuarioId
+        +LocalDateTime dataResgate
+        +int pontosGastos
+        +String status
+    }
+
+    class Avaliacao {
+        +String id
+        +String tipo
+        +String coletor
+        +String data
+        +String comentario
+    }
+
+    class Chat {
+        +String id
+        +List~String~ participantesId
+        +String ultimaMensagem
+        +long criadoEm
+        +long ultimaAtividade
+        +LocalDateTime dataCriacao
+        +String agendamentoId
+    }
+
+    class Mensagem {
+        +String id
+        +String chatId
+        +String autorId
+        +String texto
+        +TipoMensagem tipo
+        +long enviadoEm
+        +boolean lida
+    }
+
+    class TipoMensagem {
+        <<enumeration>>
+        TEXTO
+    }
+
+    Usuario --> TipoUsuario
+    Associacao --> StatusAssociacao
+    PontoColeta *-- Endereco
+    Agendamento --> StatusAgendamento
+    Agendamento *-- Doacao
+    Agendamento --> Usuario : doadorId
+    Agendamento --> Usuario : receptorId
+    Agendamento --> PontoColeta : pontoColetaId
+    Resgate --> Usuario : usuarioId
+    Resgate --> Recompensa : recompensaId
+    Avaliacao --> Usuario : coletor
+    Chat --> Agendamento : agendamentoId
+    Chat *-- Mensagem
+    Mensagem --> TipoMensagem
+```
+
 ## Perfis de Usuario
 
 | Perfil | Descricao |
