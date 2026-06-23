@@ -39,11 +39,11 @@ public class PontoColetaController {
         return ResponseEntity.ok(service.atualizar(id, pontoColeta));
     }
 
-    /*@DeleteMapping("/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable String id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
-    }*/
+    }
 
     @PutMapping("/{id}/ativar")
     public ResponseEntity<PontoColeta> ativar(@PathVariable String id) {

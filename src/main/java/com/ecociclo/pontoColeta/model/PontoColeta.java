@@ -17,11 +17,7 @@ public class PontoColeta {
     private String responsavel;
     private String telefone;
     private String email;
-    private String endereco;
-    private String bairro;
-    private String cidade;
-    private String estado;
-    private String cep;
+    private Endereco endereco;
     private Boolean ativo;
 
 }

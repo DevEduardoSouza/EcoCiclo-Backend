@@ -69,10 +69,6 @@ public class PontoColetaService{
             existente.setTelefone(pontoColeta.getTelefone());
             existente.setEmail(pontoColeta.getEmail());
             existente.setEndereco(pontoColeta.getEndereco());
-            existente.setBairro(pontoColeta.getBairro());
-            existente.setCidade(pontoColeta.getCidade());
-            existente.setEstado(pontoColeta.getEstado());
-            existente.setCep(pontoColeta.getCep());
 
             repository.atualizar(id, existente);
 
@@ -106,6 +102,14 @@ public class PontoColetaService{
             return ponto;
         }catch (ExecutionException | InterruptedException e){
             throw new RuntimeException("Erro ao ativar ponto", e);
+        }
+    }
+
+    public void deletar(String id) {
+        try {
+            repository.deletar(id);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Erro ao deletar ponto", e);
         }
     }
        
