@@ -111,10 +111,11 @@ public class AgendamentoService {
         if (novoStatus == StatusAgendamento.CONCLUIDO) {
 
 
-            int pontos = ag.getDoacoes()
-                    .stream()
-                    .mapToInt(Doacao::getQuantidade)
-                    .sum() * 10;
+            int pontos = (ag.getDoacoes() == null ? 0 :
+                    ag.getDoacoes()
+                            .stream()
+                            .mapToInt(Doacao::getQuantidade)
+                            .sum()) * 10;
 
             // Salva quantos pontos o agendamento gerou
             ag.setPontosGerados(pontos);
@@ -143,11 +144,18 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Campo 'doacoes' não pode ser vazio.");
 
         for (Doacao d : ag.getDoacoes()) {
+
+            if (d == null)
+                throw new IllegalArgumentException("Doação inválida.");
+
             if (d.getNome() == null || d.getNome().isBlank())
                 throw new IllegalArgumentException("Doação com nome inválido.");
 
             if (d.getQuantidade() <= 0)
                 throw new IllegalArgumentException("Quantidade deve ser maior que 0.");
+
+            if (d.getFoto() == null || d.getFoto().isBlank())
+                throw new IllegalArgumentException("Foto da doação é obrigatória.");
         }
 
         // Valida que a data não é no passado
@@ -175,4 +183,25 @@ public class AgendamentoService {
             throw new IllegalArgumentException(
                     "Ponto de coleta está inativo.");
     }
+
+    public void atualizar(String id, Agendamento novo)
+            throws ExecutionException, InterruptedException {
+
+        Agendamento existente = agendamentoRepository.buscarPorId(id);
+
+        if (existente == null)
+            throw new IllegalArgumentException("Agendamento não encontrado.");
+
+        //CAMPOS QUE PODEM SER ATUALIZADOS
+        existente.setDataHora(novo.getDataHora());
+        existente.setDoacoes(novo.getDoacoes());
+        existente.setObservacoes(novo.getObservacoes());
+        existente.setPontoColetaId(novo.getPontoColetaId());
+
+        // Revalida dados
+        validar(existente);
+
+        agendamentoRepository.atualizar(id, existente);
+    }
 }
+

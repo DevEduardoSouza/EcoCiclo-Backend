@@ -74,4 +74,5 @@ public class AgendamentoRepository {
         firestore.collection(COLLECTION).document(id).set(agendamento).get();
     }
 
+
 }

@@ -100,6 +100,20 @@ public class AgendamentoController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizar(
+            @PathVariable String id,
+            @RequestBody Agendamento agendamento)
+            throws ExecutionException, InterruptedException {
+
+        try {
+            agendamentoService.atualizar(id, agendamento);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        }
+    }
+
 
 
 
