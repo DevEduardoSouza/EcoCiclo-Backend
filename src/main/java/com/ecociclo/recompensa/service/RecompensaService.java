@@ -14,6 +14,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 
 import java.util.List;
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -67,6 +68,9 @@ public class RecompensaService {
 
     // Metodo central do Resgate usando transacao atomica
     public String resgatarRecompensa(String recompensaId, String usuarioId) throws ExecutionException, InterruptedException {
+        if (recompensaId == null || recompensaId.isBlank()) {
+            throw new RuntimeException("Recompensa e obrigatoria.");
+        }
         if (usuarioId == null || usuarioId.isBlank()) {
             throw new RuntimeException("Usuario e obrigatorio.");
         }
@@ -76,8 +80,9 @@ public class RecompensaService {
         DocumentReference recompensaRef = firestore.collection("recompensas").document(recompensaId);
         DocumentReference resgateRef = firestore.collection("resgates").document(); // Gera ID automatico
 
-        // Executa a transacao
-        firestore.runTransaction(transaction -> {
+        try {
+            // Executa a transacao
+            firestore.runTransaction(transaction -> {
             // 1. Ler os dados atuais (Regra do Firestore: Leituras SEMPRE antes das escritas)
             DocumentSnapshot docUsuario = transaction.get(userRef).get();
             Usuario usuario = docUsuario.toObject(Usuario.class);
@@ -118,14 +123,20 @@ public class RecompensaService {
                 resgateRef.getId(),
                 recompensaId,
                 usuarioId,
-                LocalDateTime.now(),
+                LocalDateTime.now().toString(),
                 recompensa.getCustoPontos(),
                 STATUS_PENDENTE
             );
             transaction.set(resgateRef, novoResgate);
 
             return null;
-        }).get(); // Garante a execucao sincrona do bloco da transacao
+            }).get(); // Garante a execucao sincrona do bloco da transacao
+        } catch (ExecutionException e) {
+            throw erroDaTransacao(e, "Erro ao resgatar recompensa.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
 
         return resgateRef.getId();
     }
@@ -137,7 +148,8 @@ public class RecompensaService {
 
         DocumentReference resgateRef = firestore.collection("resgates").document(resgateId);
 
-        firestore.runTransaction(transaction -> {
+        try {
+            firestore.runTransaction(transaction -> {
             DocumentSnapshot docResgate = transaction.get(resgateRef).get();
             Resgate resgate = docResgate.toObject(Resgate.class);
 
@@ -172,7 +184,13 @@ public class RecompensaService {
             transaction.update(resgateRef, "status", STATUS_ENTREGUE);
 
             return null;
-        }).get();
+            }).get();
+        } catch (ExecutionException e) {
+            throw erroDaTransacao(e, "Erro ao confirmar entrega.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
     }
 
     public void estornarResgate(String resgateId) throws ExecutionException, InterruptedException {
@@ -182,7 +200,8 @@ public class RecompensaService {
 
         DocumentReference resgateRef = firestore.collection("resgates").document(resgateId);
 
-        firestore.runTransaction(transaction -> {
+        try {
+            firestore.runTransaction(transaction -> {
             DocumentSnapshot docResgate = transaction.get(resgateRef).get();
             Resgate resgate = docResgate.toObject(Resgate.class);
 
@@ -222,14 +241,21 @@ public class RecompensaService {
             transaction.update(resgateRef, "status", STATUS_CANCELADO);
 
             return null;
-        }).get();
+            }).get();
+        } catch (ExecutionException e) {
+            throw erroDaTransacao(e, "Erro ao estornar resgate.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
     }
 
     // Metodo publico para o -- Agendamento -- chamar
     public void creditarPontos(String usuarioId, int quantidade, String origemId) throws ExecutionException, InterruptedException {
         DocumentReference userRef = firestore.collection("usuarios").document(usuarioId);
         
-        firestore.runTransaction(transaction -> {
+        try {
+            firestore.runTransaction(transaction -> {
             DocumentSnapshot docUsuario = transaction.get(userRef).get();
             Usuario usuario = docUsuario.toObject(Usuario.class);
             if (usuario == null) throw new RuntimeException("Usuario nao encontrado.");
@@ -238,6 +264,29 @@ public class RecompensaService {
             transaction.update(userRef, "pontuacao", novaPontuacao);
             
             return null;
-        }).get();
+            }).get();
+        } catch (ExecutionException e) {
+            throw erroDaTransacao(e, "Erro ao creditar pontos.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+    }
+
+    private RuntimeException erroDaTransacao(ExecutionException e, String mensagemPadrao) {
+        Throwable causa = e.getCause();
+        while (causa instanceof CompletionException && causa.getCause() != null) {
+            causa = causa.getCause();
+        }
+
+        if (causa instanceof RuntimeException && causa.getMessage() != null && !causa.getMessage().isBlank()) {
+            return new RuntimeException(causa.getMessage(), causa);
+        }
+
+        if (causa != null && causa.getMessage() != null && !causa.getMessage().isBlank()) {
+            return new RuntimeException(causa.getMessage(), causa);
+        }
+
+        return new RuntimeException(mensagemPadrao, e);
     }
 }
